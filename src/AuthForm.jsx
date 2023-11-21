@@ -1,13 +1,14 @@
 // AuthForm.jsx
-import { signUp, logIn, logOut } from './services/userService';
-import { useState } from 'react';
+import { signUp, logIn } from './services/userService';
+import { useState, useEffect } from 'react';
 import { Form, Button, Container, Alert, Spinner } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import { useUser } from './context/UserContext.jsx';
-import { FooterComp } from './component/footer/FooterComp.jsx';
-import { ContactComp } from './component/contact/ContactComp.jsx';
 import { CarouselComp } from './component/carousel/CarouselComp.jsx';
+import { ContactComp } from './component/contact/ContactComp.jsx';
+import { FooterComp } from './component/footer/FooterComp.jsx';
 import { Navigate } from 'react-router-dom';
+import { format } from 'date-fns';
 
 export const AuthForm = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -21,42 +22,71 @@ export const AuthForm = () => {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [messageVisibleTime, setMessageVisibleTime] = useState(null);
 
   const { user, setUser, setAuthToken, isLogged } = useUser();
+
+  const setShowSuccessWithTimeout = (message) => {
+    setShowSuccess(message);
+    setMessageVisibleTime(setTimeout(() => setShowSuccess(false), 10000)); // 40 segundos
+  };
+
+  const setShowErrorWithTimeout = (message) => {
+    setShowError(message);
+    setMessageVisibleTime(setTimeout(() => setShowError(false), 10000)); // 40 segundos
+  };
+
+  useEffect(() => {
+    return () => {
+      if (messageVisibleTime) {
+        clearTimeout(messageVisibleTime);
+      }
+    };
+  }, [messageVisibleTime]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      console.log(formData);
-
+      console.log('Form data:', formData);
       if (isSignUp) {
-        // Registro de usuario
         await signUp(formData);
-        setShowSuccess('Registro exitoso');
+        setShowSuccessWithTimeout('Registro exitoso');
         setShowError(false);
-        setFormData({ firstName: '', lastName: '', dob: '', mail: '', password: '' });
+        setFormData({
+          firstName: '',
+          lastName: '',
+          dob: '',
+          mail: '',
+          password: '',
+        });
         setIsSignUp(false);
       } else {
-        // Inicio de sesión
         const loggedInUser = await logIn(formData);
 
-        // Establecer el usuario y el token en el contexto después del inicio de sesión
-        setUser(loggedInUser);
-        setAuthToken(loggedInUser?.detail?.token);
-        setShowSuccess('Inicio de sesión éxitoso.');
-        setShowError(false);
+        if (loggedInUser && loggedInUser.detail && loggedInUser.detail.user) {
+          setUser(loggedInUser.detail.user);
+          setAuthToken(loggedInUser.detail.token);
+          setShowSuccessWithTimeout('Inicio de sesión exitoso.');
+          setShowError(false);
 
-        // Después de un inicio de sesión exitoso
-        if (loggedInUser && loggedInUser.detail) {
-          const { firstName, lastName } = loggedInUser.detail.user;
-          setUser({ firstName, lastName });
+          const { firstName, lastName, dob, mail, password } = loggedInUser.detail.user;
+          setFormData({
+            firstName,
+            lastName,
+            dob,
+            mail,
+            password // Limpiamos solo el campo de la contraseña
+          });
+        } else {
+          setShowErrorWithTimeout('Error al iniciar sesión. Verifica tus credenciales.');
+          setShowSuccess(false);
         }
       }
     } catch (error) {
-      console.error('Error:', error.message);
-      setShowError(true);
+      console.error('Error during sign up:', error.message);
+      setShowErrorWithTimeout('Error al iniciar sesión. Verifica tus credenciales.');
       setShowSuccess(false);
     } finally {
       setLoading(false);
@@ -65,8 +95,6 @@ export const AuthForm = () => {
 
   const handleLogout = async () => {
     try {
-      // Lógica para cerrar sesión
-      //await logOut(user?.detail?.token);
       setUser(null);
       setAuthToken(null);
       Navigate('/');
@@ -76,7 +104,6 @@ export const AuthForm = () => {
   };
 
   const toggleAuthMode = () => {
-    console.log('Toggle Auth Mode');
     setShowSuccess(false);
     setShowError(false);
     setIsSignUp((prev) => !prev);
@@ -88,8 +115,8 @@ export const AuthForm = () => {
         <CarouselComp />
         <div className='container my-5 d-flex justify-content-center'>
           <Form onSubmit={handleSubmit} className="w-50">
-            {loading && <Spinner animation="border" className="mr-2" />}
-            {loading && <span>{isSignUp ? 'Estamos guardando tus datos, espere un momento, por favor...' : 'Validando datos, espere un momento, por favor...'}</span>}
+            {loading && <Spinner animation="border" className="me-2" />}
+            {loading && <span className='mb-2'>{isSignUp ? 'Estamos guardando tus datos, espere un momento, por favor...' : 'Validando datos, espere un momento, por favor...'}</span>}
             {showSuccess && (
               <Alert variant="success" onClose={() => setShowSuccess(false)} dismissible>
                 {showSuccess}
@@ -101,118 +128,169 @@ export const AuthForm = () => {
               </Alert>
             )}
 
-            {!isSignUp && (
+            {isLogged ? (
               <>
+              <h2>Datos del perfil de  {user.firstName}</h2>
+                <Form.Group controlId="formFirstName">
+                  <Form.Label>Primer nombre</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Ingresa tu nombre"
+                    value={user?.firstName || ''}
+                    readOnly
+                  />
+                </Form.Group>
+
+                <Form.Group controlId="formLastName">
+                  <Form.Label>Apellido</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Ingresa tu apellido"
+                    value={user?.lastName || ''}
+                    readOnly
+                  />
+                </Form.Group>
+
+                <Form.Group controlId="formDob">
+                  <Form.Label>Fecha de nacimiento</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Ingresa tu fecha de nacimiento"
+                    value={user?.dob ? format(new Date(user.dob), 'dd/MM/yyyy') : ''}
+                    readOnly
+                  />
+                </Form.Group>
+
                 <Form.Group controlId="formMail">
                   <Form.Label>Email</Form.Label>
                   <Form.Control
-                    type="email"
+                    type="text"
                     placeholder="Ingresa tu email"
-                    onChange={(e) => setFormData({ ...formData, mail: e.target.value })}
-                    required
+                    value={user?.mail || ''}
+                    readOnly
                   />
                 </Form.Group>
 
-                <Form.Group controlId="formPassword">
-                  <Form.Label>Password</Form.Label>
+                {/* <Form.Group controlId="formPassword">
+                  <Form.Label>Clave</Form.Label>
                   <Form.Control
                     type="password"
-                    placeholder="Ingresa tu clave"
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
+                    placeholder="Ingresa una clave"
+                    value={user?.password || ''}
+                    readOnly
                   />
-                </Form.Group>
+                </Form.Group> */}
 
-                <Button variant="primary btn-own mt-4" type="submit" disabled={loading}>
-                  Iniciar sesión
+                <Button variant="danger" onClick={handleLogout} className="mb-3 mt-4">
+                  Cerrar sesión
                 </Button>
-
-                {!loading && !user && (
-                  <Button
-                    variant="link"
-                    type="button"
-                    onClick={toggleAuthMode}
-                    className="ml-2"
-                  >
-                    Registrate
-                  </Button>
-                )}
               </>
-            )}
-
-            {isSignUp && (
+            ) : (
               <>
-                <Form.Group controlId="formFirstName">
-      <Form.Label>Primer nombre</Form.Label>
-      <Form.Control
-        type="text"
-        placeholder="Ingresa tu nombre"
-        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-        required
-      />
-    </Form.Group>
+                {!isSignUp && (
+                  <>
+                  <h2>Inicio de sesión</h2>
+                    <Form.Group controlId="formMail">
+                      <Form.Label>Email</Form.Label>
+                      <Form.Control
+                        type="email"
+                        placeholder="Ingresa tu email"
+                        onChange={(e) => setFormData({ ...formData, mail: e.target.value })}
+                        required
+                      />
+                    </Form.Group>
 
-    <Form.Group controlId="formLastName">
-      <Form.Label>Apellido</Form.Label>
-      <Form.Control
-        type="text"
-        placeholder="ingresa tu apellido"
-        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-        required
-      />
-    </Form.Group>
+                    <Form.Group controlId="formPassword">
+                      <Form.Label>Password</Form.Label>
+                      <Form.Control
+                        type="password"
+                        placeholder="Ingresa tu clave"
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        required
+                      />
+                    </Form.Group>
+                    <Container className='d-flex align-items-center'>
+                     
+                        <Button variant="primary btn-own mt-4" type="submit" disabled={loading}>
+                          Iniciar sesión
+                        </Button>
 
-    <Form.Group controlId="formDob">
-      <Form.Label>Fecha de nacimiento</Form.Label>
-      <Form.Control
-        type="date"
-        placeholder="ingresa tu fecha de nacimiento"
-        onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-        required
-      />
-    </Form.Group>
+                        {!loading && !user && (
+                          <Button variant="link" type="button" onClick={toggleAuthMode} className="mt-4 ms-4">
+                            Regístrate
+                          </Button>
+                        )}
+                     
+                    </Container>
+                  </>
+                )}
 
-    <Form.Group controlId="formMail">
-      <Form.Label>Email</Form.Label>
-      <Form.Control
-        type="email"
-        placeholder="Ingresa tu email"
-        onChange={(e) => setFormData({ ...formData, mail: e.target.value })}
-        required
-      />
-    </Form.Group>
+                {isSignUp && (
+                  <>
+                  <h2>Registro de usuario</h2>
+                    <Form.Group controlId="formFirstName">
+                      <Form.Label>Primer nombre</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Ingresa tu nombre"
+                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                        required
+                      />
+                    </Form.Group>
 
-    <Form.Group controlId="formPassword">
-      <Form.Label>Clave</Form.Label>
-      <Form.Control
-        type="password"
-        placeholder="Ingresa un clave"
-        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-        required
-      />
-    </Form.Group>
+                    <Form.Group controlId="formLastName">
+                      <Form.Label>Apellido</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Ingresa tu apellido"
+                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                        required
+                      />
+                    </Form.Group>
 
-    <Button variant="primary btn-own mt-4" type="submit" disabled={loading}>
-    Registrarse
-    </Button>
+                    <Form.Group controlId="formDob">
+                      <Form.Label>Fecha de nacimiento</Form.Label>
+                      <Form.Control
+                        type="date"
+                        placeholder="Ingresa tu fecha de nacimiento"
+                        onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                        required
+                      />
+                    </Form.Group>
 
-                {!loading && !isLogged && (
-                  <Button
-                    variant="link"
-                    type="button"
-                    onClick={toggleAuthMode}
-                    className="ml-2"
-                  >
-                    iniciar sesión
-                  </Button>
+                    <Form.Group controlId="formMail">
+                      <Form.Label>Email</Form.Label>
+                      <Form.Control
+                        type="email"
+                        placeholder="Ingresa tu email"
+                        onChange={(e) => setFormData({ ...formData, mail: e.target.value })}
+                        required
+                      />
+                    </Form.Group>
+
+                    <Form.Group controlId="formPassword">
+                      <Form.Label>Clave</Form.Label>
+                      <Form.Control
+                        type="password"
+                        placeholder="Ingresa una clave"
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        required
+                      />
+                    </Form.Group>
+                    <Container className='d-flex align-items-center'>
+                      <Button variant="primary btn-own mt-4" type="submit" disabled={loading}>
+                        Registrarse
+                      </Button>
+
+                      {!loading && !isLogged && (
+                        <Button variant="link" type="button" onClick={toggleAuthMode} className="mt-4 ms-4" >
+                          Iniciar sesión
+                        </Button>
+                      )}
+                    </Container>
+                  </>
                 )}
               </>
-            )}
-
-            {isLogged && (
-              <Button variant="danger" onClick={handleLogout} className="mb-3">
-                Cerrar sesión
-              </Button>
             )}
           </Form>
         </div>

@@ -2,16 +2,29 @@
 const API_URL = 'https://api-node-tienda.onrender.com/v1/user';
 
 export const signUp = async (userData) => {
-  const response = await fetch(`${API_URL}/signup`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userData),
-  });
+  try {
+    const response = await fetch(`${API_URL}/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
 
-  if (!response.ok) {
-    throw new Error('Sign up failed');
+    console.log('Response status:', response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Sign up failed:', errorData.message);
+      throw new Error(`Sign up failed: ${errorData.message}`);
+    }
+
+    const user = await response.json();
+    console.log('User registered successfully:', user);
+    return user;
+  } catch (error) {
+    console.error('Error during sign up:', error.message);
+    throw new Error('Unexpected error during sign up');
   }
 };
 

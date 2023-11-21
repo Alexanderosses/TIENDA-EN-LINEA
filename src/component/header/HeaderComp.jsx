@@ -37,8 +37,9 @@ export const HeaderComp = ({ menuFrase }) => {
           <Nav className="ml-auto">
             {user && user.firstName ? (
               <>
-                <span className='menu'>¡Hola, {user.firstName}!</span>
-
+              <Nav.Link as={Link} to="/login" className='menu-txt'>
+                <span className=''>¡Hola, {user.firstName}!</span>
+              </Nav.Link>
               </>
             ) : (
               <>
