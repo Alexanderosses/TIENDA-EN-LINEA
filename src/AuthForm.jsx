@@ -7,6 +7,7 @@ import { useUser } from './context/UserContext.jsx';
 import { FooterComp } from './component/footer/FooterComp.jsx';
 import { ContactComp } from './component/contact/ContactComp.jsx';
 import { CarouselComp } from './component/carousel/CarouselComp.jsx';
+import { Navigate } from 'react-router-dom';
 
 export const AuthForm = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -63,10 +64,15 @@ export const AuthForm = () => {
   };
 
   const handleLogout = async () => {
-    // Lógica para cerrar sesión
-    await logOut(user?.detail?.token);
-    setUser(null); // Limpiar el usuario en el contexto
-    setAuthToken(null); // Limpiar el token en el contexto
+    try {
+      // Lógica para cerrar sesión
+      //await logOut(user?.detail?.token);
+      setUser(null);
+      setAuthToken(null);
+      Navigate('/');
+    } catch (error) {
+      console.error('Error during logout:', error.message);
+    }
   };
 
   const toggleAuthMode = () => {
