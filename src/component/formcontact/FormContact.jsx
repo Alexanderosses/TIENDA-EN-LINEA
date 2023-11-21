@@ -65,7 +65,7 @@ export const FormContact = () => {
             </Row>          
 
             <div className='cardButton'>
-                    <button type="submit" className='button'>Enviar</button>
+                    <button type="submit" className='btn btn-own'>ENVIAR</button>
             </div>    
 
         </Form>

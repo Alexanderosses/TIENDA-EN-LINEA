@@ -6,15 +6,20 @@
   --color-3c: #320000; /* rojo oscuro 2 */
   --color-4: #ffffff; /* blanco */
   --color-5: #0D1117; /* azul oscuro */
+  --color-6: rgb(60, 60, 60);
   scroll-behavior: smooth;
 }
 
 *{
-  text-decoration: none !important;
-  text-decoration-line: none !important;
+  /*text-decoration-line: none !important;*/
   font-family: 'Ubuntu', sans-serif !important;
 }
-
+.destacado{
+  text-align: left;
+  border-radius: 20px ;
+  color: rgb(188, 0, 0);
+  font-weight: bold;
+}
 .button{
   color: var(--color-4) !important;
   background-color: var(--color-3a) !important;

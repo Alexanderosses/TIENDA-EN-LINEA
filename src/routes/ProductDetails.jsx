@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { Container, Card, Col, Row } from 'react-bootstrap';
+import { CarouselComp } from '../component/carousel/CarouselComp.jsx';
 import { ContactComp } from '../component/contact/ContactComp.jsx';
 import { FooterComp } from '../component/footer/FooterComp.jsx';
 
@@ -53,30 +54,33 @@ export const ProductDetails = () => {
     };
 
   return (
-    <div>
-    <Container fluid className="mt-5">
-      <div className="ptop"></div>
-      <h2 className="titleSectionCard mt-5 ms-2 mb-4">Detalles del Producto</h2>
-      <Card className="bodyCard h-100">
-        <Card.Body className="d-flex flex-column">
-          <Row>
-            <Col md={4} className="carImg">
-              <Card.Img src={product.img} alt={product.modelo}  className="cardImg"  />
-            </Col>
-            <Col md={8}>
-              <Card.Title className="bodyCardTitle">{product.marca}</Card.Title>
-              <Card.Title className="bodyCardTitle">{product.modelo}</Card.Title>
-              <Card.Text className="bodyCardParagraph">{product.descripcion}</Card.Text>
-              <Card.Text className="bodyCardPrice mt-auto">Precio: $ {formatPrice(product.precio)} </Card.Text>
-              <Card.Text className="bodyCardPrice mt-auto"> Descuento: {product.descuento}% </Card.Text>
-              <Card.Text className="bodyCardPrice mt-auto">Precio Oferta: $ {formatPrice(product.precioOferta)} </Card.Text>              
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+    <Container fluid className='g-0'>
+      <CarouselComp />
+        <Container className="mb-5 ">
+          <h2 className="titleSection">Ficha del Scooter</h2>
+          <Card className="bodyCard h-100 ">
+            <Card.Body className="d-flex flex-column">
+              <Row>
+                <Col md={4} className="carImg">
+                  <Card.Img src={product.img} alt={product.modelo}  className="cardImg"  />
+                </Col>
+                <Col md={8}>
+                  <Card.Title className="bodyCardMarca">{product.marca} <br/>
+                  <div className="bodyCardTitle">{product.modelo}</div >
+                  </Card.Title >
+                  <Card.Text >
+                  <div className="bodyCardParagraph pb-2"> {product.descripcion}</div>
+                  <div className="bodyCardPrice mt-auto pb-2">Precio: $ <del>{formatPrice(product.precio)}</del> </div>
+                  <div className="bodyCardDescuento mt-auto pb-2 destacado"> Descuento: <strong >{product.descuento}%</strong>  </div>
+                  <div className="bodyCardPriceEnd mt-auto">Precio Oferta: $ {formatPrice(product.precioOferta)} </div>   
+                  </Card.Text>           
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
+        </Container>
+      <ContactComp />
+      <FooterComp />
     </Container>
-    <ContactComp />
-    <FooterComp />
-    </div>
   );
 };
