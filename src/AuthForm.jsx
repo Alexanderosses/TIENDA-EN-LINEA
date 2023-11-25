@@ -130,7 +130,7 @@ export const AuthForm = () => {
 
             {isLogged ? (
               <>
-              <h2>Datos del perfil de {user.firstName}</h2>
+              <h2>Datos del perfil de  {user.firstName}</h2>
                 <Form.Group controlId="formFirstName">
                   <Form.Label>Primer nombre</Form.Label>
                   <Form.Control

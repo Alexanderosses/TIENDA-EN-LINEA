@@ -1,22 +1,24 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import { Container, Card, Col, Row } from 'react-bootstrap';
+import { Container, Card, Col, Row, Alert } from 'react-bootstrap';
 import { CarouselComp } from '../component/carousel/CarouselComp.jsx';
 import { ContactComp } from '../component/contact/ContactComp.jsx';
 import { FooterComp } from '../component/footer/FooterComp.jsx';
 import IcoMercadopago from '../assets/ico-MercadoPago.png';
+import { useUser } from '../context/UserContext.jsx';
 
 export const ProductDetails = () => {
   const { item } = useParams();
   const [product, setProduct] = useState(null);
+  const { isLogged } = useUser();
+  const [showLoginMessage, setShowLoginMessage] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get('https://api-node-tienda.onrender.com/v1/post');
         if (response.data.message === 'Posts') {
-          // Encuentra el producto por nombre
           const productFound = response.data.detail.find((p) => p.modelo === item);
 
           if (productFound) {
@@ -34,7 +36,6 @@ export const ProductDetails = () => {
     fetchData();
   }, [item]);
 
-  // Función para formatear el precio a millones con separadores de puntos
   const formatPrice = (price) => {
     if (typeof price === 'number') {
       return price.toLocaleString('es-ES', {
@@ -45,23 +46,24 @@ export const ProductDetails = () => {
     return 'Precio no válido';
   };
 
-  const FuncionComprar = async (product) => {
-    try {
-      const response = await axios.post('https://api-node-tienda.onrender.com/v1/Mercado_Pago', product);
-      window.location.href = response.data;
-    } catch (error) {
-      console.error('Error al intentar comprar:', error);
-      if (error.response) {
-        // El servidor respondió con un código de estado fuera del rango 2xx
-        console.error('Respuesta del servidor:', error.response.data);
-        console.error('Código de estado:', error.response.status);
-      } else if (error.request) {
-        // La solicitud fue realizada pero no se recibió respuesta
-        console.error('No se recibió respuesta del servidor');
-      } else {
-        // Algo más causó un error
-        console.error('Error:', error.message);
+  const FuncionComprar = async () => {
+    if (isLogged) {
+      try {
+        const response = await axios.post('https://api-node-tienda.onrender.com/Mercado_Pago', product);
+        window.location.href = response.data;
+      } catch (error) {
+        console.error('Error al intentar comprar:', error);
+        if (error.response) {
+          console.error('Respuesta del servidor:', error.response.data);
+          console.error('Código de estado:', error.response.status);
+        } else if (error.request) {
+          console.error('No se recibió respuesta del servidor');
+        } else {
+          console.error('Error:', error.message);
+        }
       }
+    } else {
+      setShowLoginMessage(true);
     }
   };
 
@@ -103,11 +105,18 @@ export const ProductDetails = () => {
                   <div className="bodyCardPriceEnd mt-auto">
                     Precio Oferta: $ {formatPrice(product.precioOferta)}{' '}
                   </div>
-
-                  <Col md={4}>
-                  <button className='btn btn-own mt-4' onClick={() => product && FuncionComprar(product)}>Comprar <img className="" src={IcoMercadopago} alt="Logo Mercadopago" /> Mercadopago</button>
-                  </Col>
                 </Card.Text>
+
+                <Col md={12} className=' mt-4'>
+                  {showLoginMessage && !isLogged && (
+                    <Alert variant="warning">
+                      Debes iniciar sesión para comprar.
+                    </Alert>
+                  )}
+                  <button className='btn btn-own' onClick={FuncionComprar} disabled={!isLogged}>
+                    Comprar <img className="" src={IcoMercadopago} alt="Logo Mercadopago" /> Mercadopago
+                  </button>
+                </Col>
               </Col>
             </Row>
           </Card.Body>

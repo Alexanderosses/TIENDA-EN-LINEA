@@ -10,11 +10,7 @@ export const UserProvider = ({ children }) => {
   const isLogged = Boolean(user); // Derivar el estado isLogged del estado del usuario
 
   return (
-    <UserContext.Provider value={{ 
-      user, setUser, 
-      authToken, setAuthToken, 
-      isLogged 
-    }}>
+    <UserContext.Provider value={{ user, setUser, authToken, setAuthToken, isLogged }}>
       {children}
     </UserContext.Provider>
   );
