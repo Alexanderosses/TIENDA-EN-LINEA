@@ -5,6 +5,7 @@ import { Container, Card, Col, Row } from 'react-bootstrap';
 import { CarouselComp } from '../component/carousel/CarouselComp.jsx';
 import { ContactComp } from '../component/contact/ContactComp.jsx';
 import { FooterComp } from '../component/footer/FooterComp.jsx';
+import IcoMercadopago from '../assets/ico-MercadoPago.png';
 
 export const ProductDetails = () => {
   const { item } = useParams();
@@ -46,7 +47,7 @@ export const ProductDetails = () => {
 
   const FuncionComprar = async (product) => {
     try {
-      const response = await axios.post('http://localhost:3005/Mercado_Pago', product);
+      const response = await axios.post('https://api-node-tienda.onrender.com/v1/Mercado_Pago', product);
       window.location.href = response.data;
     } catch (error) {
       console.error('Error al intentar comprar:', error);
@@ -104,7 +105,7 @@ export const ProductDetails = () => {
                   </div>
 
                   <Col md={4}>
-                  <button className='btn btn-own' onClick={() => product && FuncionComprar(product)}>Comprar</button>
+                  <button className='btn btn-own mt-4' onClick={() => product && FuncionComprar(product)}>Comprar <img className="" src={IcoMercadopago} alt="Logo Mercadopago" /> Mercadopago</button>
                   </Col>
                 </Card.Text>
               </Col>
