@@ -7,9 +7,6 @@ En el backend, optamos por Node y Express JS con MongoDB, ofreciendo una infraes
 
 En resumen, nuestra tienda en línea representa una fusión de innovación y funcionalidad.
 
-////////////////////
-Para realizar la instalación de este proyecto, es necesario realizar clone o fork de este repositorio.
-
 ////////////////////  PAGE GITHUB
 https://alexanderosses.github.io/TIENDA-EN-LINEA/#/
 
