@@ -10,18 +10,18 @@ En resumen, nuestra tienda en línea representa una fusión de innovación y fun
 ////////////////////
 Para realizar la instalación de este proyecto, es necesario realizar clone o fork de este repositorio.
 
-////////////////////  CLIENT  
+////////////////////  PAGE GITHUB
 https://alexanderosses.github.io/TIENDA-EN-LINEA/#/
-Instalar dependencias npm install
-Levantar el servidor con npm run dev
 
-////////////////////  SERVER  
+////////////////////  SERVIDOR 
 https://github.com/Alexanderosses/api-node-tienda
 Instalar dependencias npm install
 Levantar el servidor con npm run start
 
-////////////////////  DIRECCIÓN GITHUB
+////////////////////  CLIENTE
 https://github.com/Alexanderosses/TIENDA-EN-LINEA
+Instalar dependencias npm install
+Levantar el servidor con npm run dev
 
 ////////////////////  DEPENDENCIAS CLIENT
 React JS
